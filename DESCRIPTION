@@ -1,0 +1,38 @@
+Package: frenchEconomy
+Type: Package
+Title: R-Shiny Dashboard Displaying Data From INSEE And Banque De France
+Version: 0.1.0
+Authors@R: 
+  c(person("Hadrien", "Leclerc", email = "leclerc.hadrien@gmail.com",
+  role = c("aut", "cre")),
+    person("INSEE", role = "cph"))
+Author: Hadrien Leclerc [aut, cre], INSEE [cph]
+Maintainer: Hadrien Leclerc <leclerc.hadrien@gmail.com>
+Description: R-Shiny Dashboard Displaying Data From INSEE And Banque De France.
+License: GPL-3
+Encoding: UTF-8
+LazyData: true
+Imports: 
+  shiny,
+  shinydashboard,
+  shinydashboardPlus,
+  shinyWidgets,
+  shinyjs,
+  DT,
+  magrittr,
+  dplyr,
+  stringr,
+  lubridate,
+  rlang,
+  ggplot2,
+  plotly,
+  rmarkdown,
+  RColorBrewer,
+  ggthemes,
+  insee,
+  rwebstat,
+  png,
+  grid
+Depends: R (>= 2.10)
+NeedsCompilation: no
+RoxygenNote: 7.1.1

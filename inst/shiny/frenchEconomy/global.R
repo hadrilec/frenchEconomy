@@ -1,0 +1,180 @@
+
+library(shiny)
+library(shinydashboard)
+library(shinydashboardPlus)
+library(shinyWidgets)
+library(shinyjs)
+library(DT)
+library(magrittr)
+library(dplyr)
+library(ggplot2)
+library(stringr)
+library(lubridate)
+library(rmarkdown)
+library(plotly)
+library(RColorBrewer)
+library(ggthemes)
+library(insee)
+
+Print = function(x){
+  obj_name = deparse(substitute(x))
+  cat(file = stderr(), obj_name, ":", x, "\n")
+}
+
+idbank_list = insee::get_idbank_list()
+# idbank_list = insee:::idbank_list
+dataset_list = insee::get_dataset_list()
+
+idbank_list_all = idbank_list_en$idbank
+idbank_list_all_label_en = paste(idbank_list_en$idbank, ":", idbank_list_en$title)
+idbank_list_all_label_fr = paste(idbank_list_fr$idbank, ":", idbank_list_fr$title)
+
+dataset_list_selectize =
+  dataset_list %>%
+  filter(id %in% unique(idbank_list$nomflow))
+
+dataset_list_id = dataset_list_selectize$id
+
+dataset_list_selectize_fr = paste(dataset_list_selectize$id, ":", dataset_list_selectize$Name.fr)
+dataset_list_selectize_en = paste(dataset_list_selectize$id, ":", dataset_list_selectize$Name.en)
+
+label_table = data.frame(
+  id = NA,
+  label_fr = NA,
+  label_en = NA,
+  stringsAsFactors = FALSE)
+
+label_table[nrow(label_table)+1,] = c("dshb_title", "frenchEconomy", "frenchEconomy")
+label_table[nrow(label_table)+1,] = c("select_title_placeholder", "S\U00E9lectionner un titre", "Select title")
+label_table[nrow(label_table)+1,] = c("menu_item1", "A la Une", "Headlines")
+label_table[nrow(label_table)+1,] = c("menu_item2", "Catalogue des graphiques", "Plot store")
+label_table[nrow(label_table)+1,] = c("menu_item3", "Graphique \U00E0 la demande", "Plot yourself")
+label_table[nrow(label_table)+1,] = c("catalog",
+                                      "Catalogue des graphiques - Cliquer sur une ligne pour faire apparaître le graphique",
+                                      "Catalogue of plots - Click on one row to display the plot")
+
+label_table[nrow(label_table)+1,] = c("slides_title", "Cr\u00E9er une pr\U00E9sentation", "Make your slides")
+label_table[nrow(label_table)+1,] = c("slides_placeholder", "Ajouter le graphique à l'\u00E9cran", "Add the current plot")
+label_table[nrow(label_table)+1,] = c("slides_download",
+                                      "T\u00E9l\u00E9charger la pr\u00E9sentaion",
+                                      "Download slides")
+
+label_table[nrow(label_table)+1,] = c("idbank_list",
+                                      "Catalogue des s\u00E9ries - Cliquer sur une ou plusieurs s\U00E9ries pour afficher le graphique",
+                                      "Catalogue of series - Click on one or several series to display the plot")
+label_table[nrow(label_table)+1,] = c("dataset_list", "Choix du jeu de donn\u00E9es", "Choose a dataset")
+
+label_table[nrow(label_table)+1,] = c("new_plot_title",
+                                      "Nouveau graphique!",
+                                      "Get a new plot!")
+
+label_table[nrow(label_table)+1,] = c("plot_catalogue",
+                                      "Graphique",
+                                      "Plot")
+
+label_table[nrow(label_table)+1,] = c("interactive_plot_title",
+                                      "Graphique int\U00E9ractif",
+                                      "Interactive Plot")
+
+label_table[nrow(label_table)+1,] = c("downloadData_title",
+                                      "Donn\u00E9es du graphique",
+                                      "Download plot's data")
+
+label_table[nrow(label_table)+1,] = c("slider_period",
+                                      "Choix de la p\u00E9riode temporelle",
+                                      "Choose the time period")
+
+label_table[nrow(label_table)+1,] = c("deselect_idbank_in_list_title",
+                                      "D\u00E9s\u00E9lectionner toutes les s\u00E9ries",
+                                      "Deselect all series")
+
+label_table[nrow(label_table)+1,] = c("one_plot_title",
+                                      "Toutes les courbes sur un seul graphique",
+                                      "All curves on one plot")
+
+label_table[nrow(label_table)+1,] = c("data_table",
+                                      "Donn\u00E9es",
+                                      "Data")
+
+label_table[nrow(label_table)+1,] = c("growth_button_title",
+                                      "Choisir : ",
+                                      "Choose : ")
+
+label_table[nrow(label_table)+1,] = c("growth_button_raw",
+                                      "Donn\u00E9es brutes",
+                                      "Raw data")
+
+label_table[nrow(label_table)+1,] = c("growth_button_yoy",
+                                      "Taux de croissance annuel",
+                                      "Yearly growth rate")
+
+label_table[nrow(label_table)+1,] = c("growth_button_pop",
+                                      "Taux de croissance trimestriel ou mensuel",
+                                      "Quarterly or monthly growth rate")
+
+label_table[nrow(label_table)+1,] = c("growth_button_qoq",
+                                      "Taux de croissance trimestriel",
+                                      "Quarterly growth rate")
+
+label_table[nrow(label_table)+1,] = c("growth_button_mom",
+                                      "Taux de croissance mensuel",
+                                      "Monthly growth rate")
+
+label_table[nrow(label_table)+1,] = c("growth_button_sos",
+                                      "Taux de croissance semestriel",
+                                      "Semesterly growth rate")
+
+label_table[nrow(label_table)+1,] = c("growth_button_bob",
+                                      "Taux de croissance bimensuel",
+                                      "Bimonthly growth rate")
+
+get_label = function(id, df = label_table, lang = "en"){
+
+  row_df = which(df[,"id"] == id)
+
+  if(length(row_df) > 0){
+    if(lang == "en"){
+      label = df[row_df, "label_en"]
+    }else{
+      label = df[row_df, "label_fr"]
+    }
+  }else{
+    label = "label missing"
+  }
+
+  return(label)
+}
+
+plot_table = data.frame(
+  id = NA,
+  title_fr = NA,
+  title_en = NA,
+  stringsAsFactors = FALSE)
+
+plot_table[nrow(plot_table)+1,] = c("enquete_indus",
+                                      "Enqu\U00EAtes dans l'industrie",
+                                      "Surveys in industry")
+
+plot_table[nrow(plot_table)+1,] = c("pib_growth_qoq",
+                                     "PIB - taux de croissance trimestriel",
+                                     "GDP growth rate quarter-on-quarter")
+
+plot_table = plot_table[which(!is.na(plot_table[,"id"])),]
+
+link_app_plot = system.file("shiny/frenchEconomy/plot", package = "frenchEconomy")
+
+list_file = file.path(link_app_plot, list.files(link_app_plot, pattern= ".R$"))
+for(plot_file in list_file){
+  source(plot_file)
+}
+
+slides_rmd_file = system.file("./inst/shiny/frenchEconomy/slides.Rmd", package = "frenchEconomy")
+#
+# last_release =
+#   get_last_release() %>%
+#   mutate(pub_date = lubridate::dmy(substr(pubDate, 6, 16))) %>%
+#   mutate(dataset = substr(title, 1, stringr::str_locate(title, "]"))) %>%
+#   mutate(dataset = gsub("\\[|\\]", "", dataset))
+#
+
+
