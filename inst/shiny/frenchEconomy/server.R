@@ -9,6 +9,7 @@ shinyServer(function(input, output, session) {
   get_interactive_plot <- reactiveVal()
   get_one_plot <- reactiveVal()
   data_plot <- reactiveVal()
+  # idbank_row_selected <- reactiveVal()
 
   observe({
     get_interactive_plot(FALSE)
@@ -110,6 +111,8 @@ shinyServer(function(input, output, session) {
 observeEvent({
   lang()
 },{
+  # Print(lang())
+  
   if(is.null(lang())){lang_selected = "en"}else{lang_selected = lang()}
 
   if(lang_selected == "en"){
@@ -402,6 +405,8 @@ observeEvent({
   input$dim16
   input$idbank_picker
 },{
+  # Print(input$dim1)
+  
   if(is.null(lang())){lang_selected = "en"}else{lang_selected = lang()}
 
   if(lang_selected == "en"){
@@ -508,256 +513,307 @@ observeEvent({
 
   row_selected = input$idbank_list_rows_selected
   
-  Print(input$idbank_list_rows_selected)
-  Print(input$new_plot)
+  # Print(input$idbank_list_rows_selected)
+  # Print(input$new_plot)
   
-  if(!is.null(row_selected)){
-
-    idbank_selected =
-      idbank_list_react() %>%
-      slice(row_selected) %>%
-      pull(idbank)
-
-  data_raw = get_insee_idbank(idbank_selected)
-  data = data_raw
-
-  data = data %>%
-    mutate(TITLE_EN = paste(TITLE_EN , "-", IDBANK)) %>%
-    mutate(TITLE_FR = paste(TITLE_FR , "-", IDBANK))
-
-  gg_name = paste0("plot_", gsub("-|:| |CET","", Sys.time()))
-  # gg_name = paste0("plot_", paste0(idbank_selected, collapse = "_"))
-  gg_current_name(gg_name)
-
-  output$growth_button <- renderUI({
-    prettyRadioButtons(
-      inputId = "growth_button",
-      selected = input$growth_button,
-      label = get_label("growth_button_title", lang = lang_selected),
-      choiceNames = c(get_label("growth_button_raw", lang = lang_selected),
-                  get_label("growth_button_yoy", lang = lang_selected),
-                  get_label("growth_button_pop", lang = lang_selected)),
-      choiceValues = c("raw", "yoy", "pop")
-    )
-  })
-
-  if(!is.null(input$growth_button)){
-
-    if(input$growth_button != "raw"){
+  # trigger_update = TRUE
+  # if(!is.null(idbank_row_selected())){
+  #   if(all(row_selected %in% idbank_row_selected())){
+  #     if(all(idbank_row_selected() %in% row_selected)){
+  #       trigger_update = FALSE
+  #     }
+  #   }
+  # }
+  # trigger_update
+  if(TRUE){
+    if(!is.null(row_selected)){
+      
+      idbank_selected =
+        idbank_list_react() %>%
+        slice(row_selected) %>%
+        pull(idbank)
+      
+      data_raw = get_insee_idbank(idbank_selected)
+      data = data_raw
+      
       data = data %>%
-        mutate(year = lubridate::year(DATE)) %>%
-        arrange(DATE) %>%
-        group_by(IDBANK, year) %>%
-        mutate(freq = n()) %>%
-        group_by(IDBANK) %>%
-        mutate(freq = max(freq))
-    }
-
-    if(input$growth_button == "yoy"){
-
-      data = data %>%
-        mutate(OBS_VALUE_raw = OBS_VALUE) %>%
-        group_by(IDBANK) %>%
-        mutate(OBS_VALUE = 100 * (OBS_VALUE / abs(dplyr::lag(OBS_VALUE, min(freq))) - 1))
-
-      if(lang_selected == "en"){
-        data = data %>%
-          mutate(TITLE_EN = paste(TITLE_EN , "-", get_label("growth_button_yoy", lang = lang_selected)))
-      }else{
-        data = data %>%
-          mutate(TITLE_FR = paste(TITLE_FR , "-", get_label("growth_button_yoy", lang = lang_selected)))
-      }
-    }
-
-    if(input$growth_button == "pop"){
-      data = data %>%
-        mutate(OBS_VALUE_raw = OBS_VALUE) %>%
-        group_by(IDBANK) %>%
-        mutate(OBS_VALUE = 100 * (OBS_VALUE / abs(dplyr::lag(OBS_VALUE, 1)) - 1))
-
-      data = data %>%
-        mutate(
-          add_title_period = case_when(
-            freq == 12 ~ get_label("growth_button_mom", lang = lang_selected),
-            freq == 4 ~ get_label("growth_button_qoq", lang = lang_selected),
-            freq == 6 ~ get_label("growth_button_bob", lang = lang_selected),
-            freq == 2 ~ get_label("growth_button_sos", lang = lang_selected),
-            freq == 1 ~ get_label("growth_button_yoy", lang = lang_selected)
-          )
+        mutate(TITLE_EN = paste(TITLE_EN , "-", IDBANK)) %>%
+        mutate(TITLE_FR = paste(TITLE_FR , "-", IDBANK))
+      
+      gg_name = paste0("plot_", gsub("-|:| |CET","", Sys.time()))
+      # gg_name = paste0("plot_", paste0(idbank_selected, collapse = "_"))
+      gg_current_name(gg_name)
+      
+      output$growth_button <- renderUI({
+        prettyRadioButtons(
+          inputId = "growth_button",
+          selected = input$growth_button,
+          label = get_label("growth_button_title", lang = lang_selected),
+          choiceNames = c(get_label("growth_button_raw", lang = lang_selected),
+                          get_label("growth_button_yoy", lang = lang_selected),
+                          get_label("growth_button_pop", lang = lang_selected)),
+          choiceValues = c("raw", "yoy", "pop")
         )
-
-      if(lang_selected == "en"){
-        data = data %>%
-          mutate(TITLE_EN = paste(TITLE_EN , "-", add_title_period)) %>%
-          select(-add_title_period)
-      }else{
-        data = data %>%
-          mutate(TITLE_FR = paste(TITLE_FR , "-", add_title_period)) %>%
-          select(-add_title_period)
+      })
+      
+      if(!is.null(input$growth_button)){
+        
+        if(input$growth_button != "raw"){
+          data = data %>%
+            mutate(year = lubridate::year(DATE)) %>%
+            arrange(DATE) %>%
+            group_by(IDBANK, year) %>%
+            mutate(freq = n()) %>%
+            group_by(IDBANK) %>%
+            mutate(freq = max(freq))
+        }
+        
+        if(input$growth_button == "yoy"){
+          
+          data = data %>%
+            mutate(OBS_VALUE_raw = OBS_VALUE) %>%
+            group_by(IDBANK) %>%
+            mutate(OBS_VALUE = 100 * (OBS_VALUE / abs(dplyr::lag(OBS_VALUE, min(freq))) - 1))
+          
+          if(lang_selected == "en"){
+            data = data %>%
+              mutate(TITLE_EN = paste(TITLE_EN , "-", get_label("growth_button_yoy", lang = lang_selected)))
+          }else{
+            data = data %>%
+              mutate(TITLE_FR = paste(TITLE_FR , "-", get_label("growth_button_yoy", lang = lang_selected)))
+          }
+        }
+        
+        if(input$growth_button == "pop"){
+          data = data %>%
+            mutate(OBS_VALUE_raw = OBS_VALUE) %>%
+            group_by(IDBANK) %>%
+            mutate(OBS_VALUE = 100 * (OBS_VALUE / abs(dplyr::lag(OBS_VALUE, 1)) - 1))
+          
+          data = data %>%
+            mutate(
+              add_title_period = case_when(
+                freq == 12 ~ get_label("growth_button_mom", lang = lang_selected),
+                freq == 4 ~ get_label("growth_button_qoq", lang = lang_selected),
+                freq == 6 ~ get_label("growth_button_bob", lang = lang_selected),
+                freq == 2 ~ get_label("growth_button_sos", lang = lang_selected),
+                freq == 1 ~ get_label("growth_button_yoy", lang = lang_selected)
+              )
+            )
+          
+          if(lang_selected == "en"){
+            data = data %>%
+              mutate(TITLE_EN = paste(TITLE_EN , "-", add_title_period)) %>%
+              select(-add_title_period)
+          }else{
+            data = data %>%
+              mutate(TITLE_FR = paste(TITLE_FR , "-", add_title_period)) %>%
+              select(-add_title_period)
+          }
+        }
+        
+        data = data %>% ungroup() %>% arrange(desc(DATE))
       }
-    }
-
-    data = data %>% ungroup() %>% arrange(desc(DATE))
-  }
-
-  data_plot(data)
-
-  if(is.null(input$slider_period)){
-    min_slider_period =  min(data_raw$DATE)
-    max_slider_period =  max(data_raw$DATE)
-  }else{
-    min_slider_period = input$slider_period[1]
-    max_slider_period = input$slider_period[2]
-  }
-
-  output$slider_period <- renderUI({
-    sliderInput("slider_period",
-                label = get_label("slider_period", lang = lang_selected),
-                min = min(data_raw$DATE),  max = max(data_raw$DATE),
-                value = c(min_slider_period, max_slider_period))
-  })
-
-  # output$slider_period_new_plot <- renderUI({
-  #   actionBttn(
-  #     inputId = "new_plot",
-  #     label = "",
-  #     style = "gradient",
-  #     color = "succes",
-  #     icon = icon("sync")
-  #   )
-  # })
-
-  data = data %>%
-    filter(DATE >= min_slider_period & DATE <= max_slider_period)
-
-  idbank_list_shown =
-    idbank_list_react() %>%
-    DT::datatable( filter = "none",
-                  selection = list(mode = "multiple", selected = row_selected, target = 'row'),
-                  options = list(pageLength = 100, scrollX = TRUE,
-                                 autoWidth = TRUE,
-                                 columnDefs = list(list(width = '170px', targets = c(0)),
-                                                   list(width = '130px', targets = c(1)),
-                                                   list(width = '500px', targets = c(2)))), rownames = FALSE) %>%
-    DT::formatStyle(0, lineHeight = '15px', target= 'row', textAlign = 'center')
-
-
-  output$idbank_list <- DT::renderDT(idbank_list_shown)
-
-  list_tab = list()
-
-  list_tab[[length(list_tab)+1]] =
-    tabPanel(title = get_label("idbank_list", lang = lang_selected),
-             box(
-               width = "100%",
-               DT::dataTableOutput("idbank_list", width = "100%", height = "75vh")
-             ))
-
-  # data_plotly = data
-
-  data$TITLE_EN = unlist(lapply(strwrap(data$TITLE_EN,
+      
+      data_plot(data)
+      
+      if(is.null(input$slider_period)){
+        min_slider_period =  min(data_raw$DATE)
+        max_slider_period =  max(data_raw$DATE)
+      }else{
+        min_slider_period = input$slider_period[1]
+        max_slider_period = input$slider_period[2]
+      }
+      
+      output$slider_period <- renderUI({
+        sliderInput("slider_period",
+                    label = get_label("slider_period", lang = lang_selected),
+                    min = min(data_raw$DATE),  max = max(data_raw$DATE),
+                    value = c(min_slider_period, max_slider_period))
+      })
+      
+      # output$slider_period_new_plot <- renderUI({
+      #   actionBttn(
+      #     inputId = "new_plot",
+      #     label = "",
+      #     style = "gradient",
+      #     color = "succes",
+      #     icon = icon("sync")
+      #   )
+      # })
+      
+      data = data %>%
+        filter(DATE >= min_slider_period & DATE <= max_slider_period)
+      
+      # idbank_list_shown =
+      #   idbank_list_react() %>%
+      #   DT::datatable( filter = "none",
+      #                  selection = list(mode = "multiple", selected = row_selected, target = 'row'),
+      #                  options = list(pageLength = 100, scrollX = TRUE,
+      #                                 autoWidth = TRUE,
+      #                                 columnDefs = list(list(width = '170px', targets = c(0)),
+      #                                                   list(width = '130px', targets = c(1)),
+      #                                                   list(width = '500px', targets = c(2)))), rownames = FALSE) %>%
+      #   DT::formatStyle(0, lineHeight = '15px', target= 'row', textAlign = 'center')
+      # 
+      
+      # output$idbank_list <- DT::renderDT(idbank_list_shown)
+      
+      # list_tab = list()
+      # 
+      # list_tab[[length(list_tab)+1]] =
+      #   tabPanel(title = get_label("idbank_list", lang = lang_selected),
+      #            box(
+      #              width = "100%",
+      #              DT::dataTableOutput("idbank_list", width = "100%", height = "75vh")
+      #            ))
+      
+      # data_plotly = data
+      
+      data$TITLE_EN = unlist(lapply(strwrap(data$TITLE_EN,
                                             width = 80, simplify=FALSE),
                                     paste, collapse="\n"))
-
-  data$TITLE_FR = unlist(lapply(strwrap(data$TITLE_FR,
+      
+      data$TITLE_FR = unlist(lapply(strwrap(data$TITLE_FR,
                                             width = 80, simplify=FALSE),
                                     paste, collapse="\n"))
-
-  gg =
-    ggplot(data, aes(x = DATE, y = OBS_VALUE))
-
-
-  if(!get_one_plot()){
-    if(lang_selected == "en"){
-      gg = gg +
-        facet_wrap(~TITLE_EN, scales = "free", dir = "v")
-      # gg = gg +
-      #   facet_wrap(~TITLE_EN, scales = "free", dir = "v", labeller = label_wrap_gen(80))
-    }else{
-      gg = gg +
-        facet_wrap(~TITLE_FR, scales = "free", dir = "v")
-      # gg = gg +
-      #   facet_wrap(~TITLE_FR, scales = "free", dir = "v", labeller = label_wrap_gen(80))
+      
+      gg =
+        ggplot(data, aes(x = DATE, y = OBS_VALUE))
+      
+      
+      if(!get_one_plot()){
+        if(lang_selected == "en"){
+          gg = gg +
+            facet_wrap(~TITLE_EN, scales = "free", dir = "v")
+          # gg = gg +
+          #   facet_wrap(~TITLE_EN, scales = "free", dir = "v", labeller = label_wrap_gen(80))
+        }else{
+          gg = gg +
+            facet_wrap(~TITLE_FR, scales = "free", dir = "v")
+          # gg = gg +
+          #   facet_wrap(~TITLE_FR, scales = "free", dir = "v", labeller = label_wrap_gen(80))
+        }
+        gg = gg +
+          geom_line() +
+          geom_point(size = 1.5)
+      }else{
+        if(lang_selected == "en"){
+          gg = gg +
+            geom_line(aes(colour = TITLE_EN)) +
+            geom_point(aes(colour = TITLE_EN), size = 1.5)
+          
+        }else{
+          gg = gg +
+            geom_line(aes(colour = TITLE_FR)) +
+            geom_point(aes(colour = TITLE_FR), size = 1.5)
+        }
+        gg = gg + guides(colour = guide_legend(ncol = 1))
+      }
+      
+      gg = gg %>% add_style(lang = lang_selected)
+      
+      # gg_current(gg)
+      list_plot_selected[[gg_name]] = gg
+      
+      output[[gg_name]] <- renderPlot({gg})
+      
+      if(!get_interactive_plot()){
+        
+        tab = tabPanel(title = get_label("plot_catalogue", lang = lang_selected),
+                       box(
+                         width = "100%",
+                         plotOutput(gg_name, width = "100%", height = "80vh")
+                       ))
+        
+    
+        
+        # list_tab[[length(list_tab)+1]] =
+        #   tabPanel(title = get_label("plot_catalogue", lang = lang_selected),
+        #            box(
+        #              width = "100%",
+        #              plotOutput(gg_name, width = "100%", height = "80vh")
+        #            ))
+        
+      }else{
+        
+        output[["plotly_requested"]] <- plotly::renderPlotly({gg_plotly(data, lang = lang_selected)})
+        
+        tab =   tabPanel(title = get_label("plot_catalogue", lang = lang_selected),
+                         box(
+                           width = "100%",
+                           plotlyOutput("plotly_requested", width = "100%", height = "80vh")
+                         ))
+        
+        # list_tab[[length(list_tab)+1]] =
+        #   tabPanel(title = get_label("plot_catalogue", lang = lang_selected),
+        #            box(
+        #              width = "100%",
+        #              plotlyOutput("plotly_requested", width = "100%", height = "80vh")
+        #            ))
+        
+      }
+      
+      removeTab(inputId = "tabs2",
+                target = get_label("plot_catalogue", lang = lang_selected))
+      
+      insertTab(inputId = "tabs2",
+                tab = tab,
+                position = "after", 
+                target = get_label("idbank_list", lang = lang_selected),
+                select = TRUE)
+      
+      if(lang_selected == "en"){
+        data_selected = data %>% select(-TITLE_FR)
+      }else{
+        data_selected = data %>% select(-TITLE_EN)
+      }
+      
+      data_shown =
+        data_selected %>%
+        arrange(desc(DATE)) %>%
+        DT::datatable( filter = "none",
+                       options = list(pageLength = 100, scrollX = TRUE,
+                                      autoWidth = TRUE,
+                                      columnDefs = list(list(width = '400px', targets = c(8)))
+                       ),
+                       rownames = FALSE) %>%
+        DT::formatStyle(0, lineHeight = '15px', target = 'row', textAlign = 'center')
+      
+      output$data_table <- DT::renderDT(data_shown)
+      
+      
+      tab_data =     tabPanel(title = get_label("data_table", lang = lang_selected),
+                              box(
+                                width = "100%",
+                                DT::dataTableOutput("data_table", width = "100%", height = "75vh")
+                              ))
+      
+      removeTab(inputId = "tabs2",
+                target = get_label("data_table", lang = lang_selected))
+      
+      insertTab(inputId = "tabs2",
+                tab = tab_data,
+                position = "after", 
+                target = get_label("plot_catalogue", lang = lang_selected),
+                select = FALSE)
+      
+      # list_tab[[length(list_tab)+1]] =
+      #   tabPanel(title = get_label("data_table", lang = lang_selected),
+      #            box(
+      #              width = "100%",
+      #              DT::dataTableOutput("data_table", width = "100%", height = "75vh")
+      #            ))
+      
+      # output$list_tab2 <- renderUI({
+      #   do.call(tabsetPanel, c(list_tab, id = 'tabs2', selected = get_label("plot_catalogue", lang = lang_selected)))
+      # })
+      
+      
     }
-    gg = gg +
-      geom_line() +
-      geom_point(size = 1.5)
-  }else{
-    if(lang_selected == "en"){
-      gg = gg +
-        geom_line(aes(colour = TITLE_EN)) +
-        geom_point(aes(colour = TITLE_EN), size = 1.5)
-
-    }else{
-      gg = gg +
-        geom_line(aes(colour = TITLE_FR)) +
-        geom_point(aes(colour = TITLE_FR), size = 1.5)
-    }
-    gg = gg + guides(colour = guide_legend(ncol = 1))
   }
-
-  gg = gg %>% add_style(lang = lang_selected)
-
-  # gg_current(gg)
-  list_plot_selected[[gg_name]] = gg
-
-  output[[gg_name]] <- renderPlot({gg})
-
-  if(!get_interactive_plot()){
-
-    list_tab[[length(list_tab)+1]] =
-      tabPanel(title = get_label("plot_catalogue", lang = lang_selected),
-               box(
-                 width = "100%",
-                 plotOutput(gg_name, width = "100%", height = "80vh")
-               ))
-
-  }else{
-
-    output[["plotly_requested"]] <- plotly::renderPlotly({gg_plotly(data, lang = lang_selected)})
-
-    list_tab[[length(list_tab)+1]] =
-      tabPanel(title = get_label("plot_catalogue", lang = lang_selected),
-               box(
-                 width = "100%",
-                 plotlyOutput("plotly_requested", width = "100%", height = "80vh")
-               ))
-
-  }
-
-  if(lang_selected == "en"){
-    data_selected = data %>% select(-TITLE_FR)
-  }else{
-    data_selected = data %>% select(-TITLE_EN)
-  }
-
-  data_shown =
-    data_selected %>%
-    arrange(desc(DATE)) %>%
-    DT::datatable( filter = "none",
-                   options = list(pageLength = 100, scrollX = TRUE,
-                                  autoWidth = TRUE,
-                                  columnDefs = list(list(width = '400px', targets = c(8)))
-                                                    ),
-                   rownames = FALSE) %>%
-    DT::formatStyle(0, lineHeight = '15px', target = 'row', textAlign = 'center')
-
-  output$data_table <- DT::renderDT(data_shown)
-
-  list_tab[[length(list_tab)+1]] =
-    tabPanel(title = get_label("data_table", lang = lang_selected),
-             box(
-               width = "100%",
-               DT::dataTableOutput("data_table", width = "100%", height = "75vh")
-             ))
-
-  output$list_tab2 <- renderUI({
-    do.call(tabsetPanel, c(list_tab, id = 'tabs2', selected = get_label("plot_catalogue", lang = lang_selected)))
-  })
-
-
-  }
-
+ 
+  # idbank_row_selected(row_selected)
 })
 
   observeEvent({
