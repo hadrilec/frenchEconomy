@@ -36,8 +36,12 @@ icp_growth_yoy = function(lang = "en"){
   
   data = data %>% 
     left_join(last_values, by = "IDBANK") %>% 
+    mutate(growth_last = case_when(growth_last > 0 ~ paste0("+", growth_last),
+                                   TRUE ~ as.character(growth_last))) %>% 
     mutate(TITLE_FR6 = paste0(TITLE_FR6, " : ", growth_last, "%")) %>% 
     mutate(TITLE_EN6 = paste0(TITLE_EN6, " : ", growth_last, "%")) %>% 
+    mutate(TITLE_EN6 = gsub("and routine household maintenance", "", TITLE_EN6)) %>% 
+    mutate(TITLE_FR6 = gsub("et entretien courant du foyer|et autres combustibles", "", TITLE_FR6)) %>% 
     filter(!str_detect(TITLE_FR6, "Education|Enseignement"))
   
   col_order_en = unique(data$TITLE_EN6)
@@ -76,7 +80,8 @@ icp_growth_yoy = function(lang = "en"){
   
   # add_style function is available on GitHub
   gg = gg %>% add_style(lang = lang, insee_logo = F)
-  
+  gg = gg + ggplot2::theme(text = ggplot2::element_text(size = 12))
+    
   return(gg)
 }
 
