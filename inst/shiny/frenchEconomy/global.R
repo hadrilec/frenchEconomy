@@ -25,9 +25,19 @@ idbank_list = insee::get_idbank_list()
 # idbank_list = insee:::idbank_list
 dataset_list = insee::get_dataset_list()
 
-idbank_list_all = idbank_list_en$idbank
-idbank_list_all_label_en = paste(idbank_list_en$idbank, ":", idbank_list_en$title)
-idbank_list_all_label_fr = paste(idbank_list_fr$idbank, ":", idbank_list_fr$title)
+id = insee:::idbank_list_internal
+
+id_en = id %>%
+  select(nomflow, idbank, cleFlow, title_en, dplyr::starts_with("dim")) %>% 
+  dplyr::rename(title = title_en)
+
+id_fr = id %>%
+  select(nomflow, idbank, cleFlow, title_fr, dplyr::starts_with("dim")) %>% 
+  dplyr::rename(title = title_fr)
+
+idbank_list_all = id$idbank
+idbank_list_all_label_en = paste(id$idbank, ":", id$title_en)
+idbank_list_all_label_fr = paste(id$idbank, ":", id$title_fr)
 
 dataset_list_selectize =
   dataset_list %>%
@@ -85,8 +95,8 @@ label_table[nrow(label_table)+1,] = c("slider_period",
                                       "Choose the time period")
 
 label_table[nrow(label_table)+1,] = c("deselect_idbank_in_list_title",
-                                      "D\u00E9s\u00E9lectionner toutes les s\u00E9ries",
-                                      "Deselect all series")
+                                      "D\u00E9s\u00E9lectionner toutes les s\u00E9ries\ndu catalogue",
+                                      "Deselect all series from the catalogue")
 
 label_table[nrow(label_table)+1,] = c("one_plot_title",
                                       "Toutes les courbes sur un seul graphique",

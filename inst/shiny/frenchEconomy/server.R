@@ -283,11 +283,16 @@ observeEvent({
   if(is.null(lang())){lang_selected = "en"}else{lang_selected = lang()}
 
   if(lang_selected == "en"){
-    idbank_list_selected = idbank_list_en
+    idbank_list_selected = id_en
     dim_selectize_placeholder = "Filter"
+    deselect_all_text = "Deselect all"
+    select_all_text = "Select all"
+    
   }else{
-    idbank_list_selected = idbank_list_fr
+    idbank_list_selected = id_fr
     dim_selectize_placeholder = "Filtrer"
+    deselect_all_text = "Tout d\u00E9s\u00E9lectionner"
+    select_all_text = "Tout s\u00E9lectionner"
   }
 
   idbank_list_selected = idbank_list_selected %>%
@@ -305,9 +310,10 @@ observeEvent({
 
     dataset_selected_name = substr(input$dataset_picker, 1, loc_first_space)
 
+    # 
     idbank_list_from_dataset =
-      idbank_list %>%
-      filter(nomflow %in% dataset_selected_name) %>%
+      insee::get_idbank_list(dataset_selected_name) %>%
+      # filter(nomflow %in% dataset_selected_name) %>%
       pull(idbank)
 
     updateSelectizeInput(session, 'idbank_picker',
@@ -316,37 +322,94 @@ observeEvent({
 
 
     idbank_list_selected =
-      idbank_list_selected %>%
-      filter(nomflow %in% c(dataset_selected_name)) %>%
+      insee::get_idbank_list(dataset_selected_name) %>% 
+      # idbank_list_selected %>%
+      # filter(nomflow %in% c(dataset_selected_name)) %>%
       insee::clean_table()
 
-    list_dim_column = names(idbank_list_selected)[grep("^dim", names(idbank_list_selected))]
-
+    # list_dim_column = names(idbank_list_selected)[grep("^dim", names(idbank_list_selected))]
+    list_idbank_column = names(idbank_list_selected)
+    list_dim_column = list_idbank_column[!stringr::str_detect(list_idbank_column, "^idbank|^cleFlow|^nomflow|^dim[:digit:]")]
+    list_dim_column_label = list_dim_column[stringr::str_detect(list_dim_column, "_label_fr$|_label_en$")]
+    list_dim_column_short = list_dim_column[!list_dim_column %in% list_dim_column_label]
     list_dim_ui = list()
 
-    for(idim in 1:length(list_dim_column)){
+    for(idim in 1:length(list_dim_column_short)){
 
-      dim = list_dim_column[idim]
-
-      value_dim = idbank_list_selected %>% select(!!dim) %>% distinct() %>% pull(dim)
-
+      dim = list_dim_column_short[idim]
+      dim_label_fr = list_dim_column_label[list_dim_column_label %in% paste0(dim, c("_label_fr"))]
+      dim_label_en = list_dim_column_label[list_dim_column_label %in% paste0(dim, c("_label_en"))]
+      
+      if(length(dim_label_fr) > 0 & length(dim_label_en) > 0){
+        
+        df_dim = idbank_list_selected %>%
+          select(!!dim, !!dim_label_fr, !!dim_label_en) %>%
+          distinct()
+        
+      }else{
+        df_dim = idbank_list_selected %>%
+          select(!!dim) %>%
+          distinct()
+        
+        df_dim[,paste0(dim, "_label_fr")] = ""
+        df_dim[,paste0(dim, "_label_en")] = ""
+      }
+      
+      df_dim[, "value_label"] = unlist(lapply(1:nrow(df_dim),
+                                              function(i){
+                                                if(is.na(df_dim[i,dim])){return(NA)}
+                                                if(df_dim[i, paste0(dim, sprintf("_label_%s", lang_selected))] == ""){
+                                                  return(df_dim[i,dim])
+                                                }else{
+                                                  return(paste(df_dim[i,dim], "-", df_dim[i,paste0(dim, sprintf("_label_%s", lang_selected))]))
+                                                }
+                                              }))
+      
+      if(lang_selected == "en"){
+        dim_placeholder = sprintf("%s", dim)
+      }else{
+        dim_placeholder = sprintf("%s", dim)
+      }
+      
+      value_dim = df_dim %>% pull(dim) 
+      value_dim_label = df_dim %>% pull("value_label")
+      
+      value_dim = value_dim[!is.na(value_dim)]
+      value_dim_label = value_dim_label[!is.na(value_dim_label)]
+      
       list_dim_ui[[length(list_dim_ui)+1]] <-
         column(2,
-          selectizeInput(
-            inputId = dim,
-            label = NULL,
-            selected = input[[dim]],
-            choices = value_dim,
-            width = "100%",
-            multiple = TRUE,
-            options = list(
-              'plugins' = list('remove_button'),
-              'create' = TRUE,
-              'persist' = FALSE,
-              placeholder = sprintf("%s %s", dim_selectize_placeholder, dim),
-              onInitialize = I('function() { this.setValue(""); }')
-            )
-          )
+               shinyWidgets::pickerInput(
+                 inputId = paste0("dim", idim),
+                 label = NULL,
+                 choices = value_dim,
+                 width = "100%",
+                 multiple = TRUE,
+                 options =
+                   pickerOptions(
+                     actionsBox = TRUE,
+                     selectAllText = select_all_text,
+                     deselectAllText = deselect_all_text,
+                     dropdownAlignRight = "auto",
+                     title = dim_placeholder
+                   ),
+                 choicesOpt = list(content = value_dim_label)
+               )
+          # selectizeInput(
+          #   inputId = dim,
+          #   label = NULL,
+          #   selected = input[[dim]],
+          #   choices = value_dim,
+          #   width = "100%",
+          #   multiple = TRUE,
+          #   options = list(
+          #     'plugins' = list('remove_button'),
+          #     'create' = TRUE,
+          #     'persist' = FALSE,
+          #     placeholder = sprintf("%s %s", dim_selectize_placeholder, dim),
+          #     onInitialize = I('function() { this.setValue(""); }')
+          #   )
+          # )
         )
     }
 
@@ -409,22 +472,43 @@ observeEvent({
   
   if(is.null(lang())){lang_selected = "en"}else{lang_selected = lang()}
 
-  if(lang_selected == "en"){
-    idbank_list_selected = idbank_list_en
-  }else{
-    idbank_list_selected = idbank_list_fr
-  }
-
-  idbank_list_selected = idbank_list_selected %>%
-    select(nomflow, idbank, title, starts_with("dim"), cleFlow)
-
+  
   if(!is.null(input$dataset_picker)){
     dataset_selected_name = input$dataset_picker
 
     idbank_list_selected =
-      idbank_list_selected %>%
-      filter(nomflow %in% c(dataset_selected_name)) %>%
+      insee::get_idbank_list(dataset_selected_name) %>% 
       insee::clean_table()
+    
+    if(lang_selected == "en"){
+      
+      id_en_short = id_en %>%
+        filter(nomflow %in% dataset_selected_name) %>% 
+        select(idbank, title)
+      
+      idbank_list_selected = idbank_list_selected %>% left_join(id_en_short, by = "idbank")
+    }else{
+      
+      id_fr_short = id_fr %>%
+        filter(nomflow %in% dataset_selected_name) %>% 
+        select(idbank, title)
+      
+      idbank_list_selected = idbank_list_selected %>% left_join(id_fr_short, by = "idbank")
+    }
+    
+    first_col = c("nomflow", "idbank", 'title')
+    other_col = names(idbank_list_selected)[!names(idbank_list_selected) %in% first_col]
+    idbank_list_selected = idbank_list_selected[,c(first_col, other_col)]
+    
+  }else{
+    
+    if(lang_selected == "en"){
+      idbank_list_selected = id_en
+    }else{
+      idbank_list_selected = id_fr
+    }
+    idbank_list_selected = idbank_list_selected %>%
+      select(nomflow, idbank, title, starts_with("dim"), cleFlow)
   }
 
   list_dim_column = names(idbank_list_selected)[grep("^dim", names(idbank_list_selected))]
