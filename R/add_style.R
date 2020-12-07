@@ -1,11 +1,18 @@
 #' @importFrom magrittr "%>%"
 #' @importFrom rlang ".data"
 #' @noRd
-add_style = function(gg, lang = "en", img.file = "./inst/assets/insee.png", insee_logo = TRUE){
+add_style = function(gg, lang = "en",
+                     last_update = TRUE,
+                     img.file = "./inst/assets/insee.png", insee_logo = TRUE){
 
   data = gg[["data"]]
   # idbank_used = data %>% distinct(IDBANK) %>% pull(IDBANK) %>% paste0(collapse = " ")
 
+  if("DATE" %in% data){
+    last_update_date = data %>% pull(DATE) %>% max()
+  }
+  
+  
   if(lang == "en"){
     caption_text_start = "Made with frenchEconomy on"
     # caption_text_series = "Used series"
@@ -44,6 +51,23 @@ add_style = function(gg, lang = "en", img.file = "./inst/assets/insee.png", inse
       legend.position = "bottom"
     )
 
+  if("DATE" %in% data){
+    if(last_update == TRUE){
+      if(lang == "en"){
+        subtt = sprintf("Last update : %s", last_update_date)
+      }else{
+        subtt = sprintf("Derni\U00E8re date : %s", last_update_date)
+      }
+      
+      if(!is.null(gg$labels$subtitle)){
+        subtt_final = sprintf("%s\n%s", gg$labels$subtitle, subtt)
+      }else{
+        subtt_final = subtt
+      }
+      gg = gg + ggplot2::labs(subtitle = subtt_final)
+    }
+  }
+  
   if(insee_logo){
 
     file_img = system.file(img.file, package = "frenchEconomy")

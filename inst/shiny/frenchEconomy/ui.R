@@ -49,10 +49,15 @@ shinyUI(
                                  menuItem(textOutput("menu_item2", inline = TRUE), tabName = "2",
                                           icon = icon("chart-area"),startExpanded = F),
 
-                                 menuItem(textOutput("menu_item3", inline = TRUE), tabName = "3",
-                                          icon = icon("chart-area"),startExpanded = F),
+                                   menuItem(textOutput("menu_item3", inline = TRUE),
+                                          menuSubItem("Export Data", tabName = "sub_1"), 
+                                          menuSubItem("Enhance your plot", tabName = "sub_2"),
+                                          icon = icon("chart-area"),
+                                          startExpanded = F),
+                                 hidden(menuItem("hiddenCharts", tabName = "hiddenCharts")),
+                                 
                                  conditionalPanel(
-                                   condition = "input.tabs_menu != '1'",
+                                   condition = "input.tabs_menu == 'sub_1' || input.tabs_menu == '2'",
                                    fluidRow(
                                      tags$style(type = "text/css", "#downloadData {color: black;}"),
                                      column(12, align = "center", offset = 0,
@@ -81,7 +86,7 @@ shinyUI(
                                  ,
 
                                  conditionalPanel(
-                                   condition = "input.tabs_menu == '3'",
+                                   condition = "input.tabs_menu == 'sub_2'", #"input.tabs_menu == '3'"
                                    fluidRow(
                                      column(12, align = "center", offset = 0,
                                    actionBttn(
@@ -147,10 +152,10 @@ shinyUI(
                   ),
                   uiOutput("list_tab")
                   ))),
-        tabItem(tabName = "3",
+        tabItem(tabName = "hiddenCharts",
                 fluidRow(
                   column(9,
-                         # tags$style(type = "text/css", "#dataset_picker {body{background:white;}}"),
+                         # tags$style(type = "text/css", ".dataset_picker {background-color:white}"),
                 uiOutput("dataset_picker")
                 )
                 ,column(3,

@@ -6,11 +6,22 @@ shinyServer(function(input, output, session) {
   plot_table_react <- reactiveVal()
   dataset_table_react <- reactiveVal()
   idbank_list_react <- reactiveVal()
+  idbank_list_view <- reactiveVal()
   get_interactive_plot <- reactiveVal()
   get_one_plot <- reactiveVal()
   data_plot <- reactiveVal()
-  # idbank_row_selected <- reactiveVal()
-
+ 
+  observeEvent(input$sidebarItemExpanded, {
+    # if(input$sidebarItemExpanded != ""){
+    #   updateTabItems(session, "tabs", selected = "hiddenCharts")
+    # }
+    if(!is.null(input$sidebarItemExpanded)){
+      updateTabItems(session, "tabs_menu", selected = "hiddenCharts")
+    }else{
+      # shinyjs::hide(selector = "ul.menu-open")
+    }
+  })
+  
   observe({
     get_interactive_plot(FALSE)
     if(!is.null(input$interactive_plot)){
@@ -121,7 +132,7 @@ observeEvent({
     deselect_all_text = "Deselect all"
     select_all_text = "Select all"
 
-    idbank_list_selected = idbank_list_en
+    idbank_list_selected = id_en
     idbank_list_all_label = idbank_list_all_label_en
     idbank_placeholder = "Choose an idbank"
 
@@ -131,27 +142,13 @@ observeEvent({
     deselect_all_text = "Tout d\u00E9s\u00E9lectionner"
     select_all_text = "Tout s\u00E9lectionner"
 
-    idbank_list_selected = idbank_list_fr
+    idbank_list_selected = id_fr
     idbank_list_all_label = idbank_list_all_label_fr
     idbank_placeholder = "Choix d'une s\u00E9rie"
   }
 
   # Print(input$growth_button)
   if(!is.null(input$growth_button)){
-    # if(input$growth_button %in% c(get_label("growth_button_raw", lang = "fr"),
-    #                               get_label("growth_button_raw", lang = "en"))){
-    #   growth_button_selected = get_label("growth_button_raw", lang = lang_selected)
-    # }
-    # if(input$growth_button %in% c(get_label("growth_button_yoy", lang = "fr"),
-    #                               get_label("growth_button_yoy", lang = "en"))){
-    #   growth_button_selected = get_label("growth_button_yoy", lang = lang_selected)
-    # }
-    # if(input$growth_button %in% c(get_label("growth_button_pop", lang = "fr"),
-    #                               get_label("growth_button_pop", lang = "en"))){
-    #   growth_button_selected = get_label("growth_button_pop", lang = lang_selected)
-    # }
-    #
-    # Print(growth_button_selected)
 
     updatePrettyRadioButtons(
       session = session,
@@ -175,20 +172,7 @@ observeEvent({
 
   output$dataset_picker <-
     renderUI(
-      # selectizeInput(
-      #   inputId = "dataset_picker",
-      #             label = NULL,
-      #             choices = dataset_list_selectize,
-      #             width = "600px",
-      #             multiple = TRUE,
-      #   options = list(
-      #     'plugins' = list('remove_button'),
-      #     'create' = TRUE,
-      #     'persist' = FALSE,
-      #     placeholder = dataset_placeholder,
-      #     onInitialize = I('function() { this.setValue(""); }')
-      #   )
-      # )
+      
       shinyWidgets::pickerInput(
         inputId = "dataset_picker",
         label = NULL,
@@ -227,7 +211,7 @@ observeEvent({
 
   idbank_list_selected =
     idbank_list_selected %>%
-    select(nomflow, idbank, title, starts_with("dim"), cleFlow) %>%
+    select(nomflow, idbank, title, cleFlow) %>%
     insee::clean_table() %>%
     as.data.frame()
 
@@ -241,7 +225,8 @@ observeEvent({
     DT::formatStyle(0, lineHeight = '15px', target= 'row')
 
   idbank_list_react(idbank_list_selected)
-
+  idbank_list_view(idbank_list_selected)
+  
   output$idbank_list <- DT::renderDT(idbank_list_shown)
 
   list_tab = list()
@@ -296,7 +281,7 @@ observeEvent({
   }
 
   idbank_list_selected = idbank_list_selected %>%
-    select(nomflow, idbank, title, starts_with("dim"), cleFlow)
+    select(nomflow, idbank, title, cleFlow)
 
   if(!is.null(input$dataset_picker)){
 
@@ -310,10 +295,9 @@ observeEvent({
 
     dataset_selected_name = substr(input$dataset_picker, 1, loc_first_space)
 
-    # 
+    
     idbank_list_from_dataset =
       insee::get_idbank_list(dataset_selected_name) %>%
-      # filter(nomflow %in% dataset_selected_name) %>%
       pull(idbank)
 
     updateSelectizeInput(session, 'idbank_picker',
@@ -323,13 +307,32 @@ observeEvent({
 
     idbank_list_selected =
       insee::get_idbank_list(dataset_selected_name) %>% 
-      # idbank_list_selected %>%
-      # filter(nomflow %in% c(dataset_selected_name)) %>%
       insee::clean_table()
+    
+    if(lang_selected == "en"){
+      
+      id_en_short = id_en %>%
+        filter(nomflow %in% dataset_selected_name) %>% 
+        select(idbank, title)
+      
+      idbank_list_selected = idbank_list_selected %>% left_join(id_en_short, by = "idbank")
+    }else{
+      
+      id_fr_short = id_fr %>%
+        filter(nomflow %in% dataset_selected_name) %>% 
+        select(idbank, title)
+      
+      idbank_list_selected = idbank_list_selected %>% left_join(id_fr_short, by = "idbank")
+    }
+    
+    first_col = c("nomflow", "idbank", 'title')
+    other_col = names(idbank_list_selected)[!names(idbank_list_selected) %in% first_col]
+    other_col = other_col[!stringr::str_detect(other_col, "^dim[:digit:]{1,}$")]
+    idbank_list_selected = idbank_list_selected[,c(first_col, other_col)]
 
     # list_dim_column = names(idbank_list_selected)[grep("^dim", names(idbank_list_selected))]
     list_idbank_column = names(idbank_list_selected)
-    list_dim_column = list_idbank_column[!stringr::str_detect(list_idbank_column, "^idbank|^cleFlow|^nomflow|^dim[:digit:]")]
+    list_dim_column = list_idbank_column[!stringr::str_detect(list_idbank_column, "^idbank|^cleFlow|^nomflow|^dim[:digit:]|^title")]
     list_dim_column_label = list_dim_column[stringr::str_detect(list_dim_column, "_label_fr$|_label_en$")]
     list_dim_column_short = list_dim_column[!list_dim_column %in% list_dim_column_label]
     list_dim_ui = list()
@@ -374,8 +377,8 @@ observeEvent({
       value_dim = df_dim %>% pull(dim) 
       value_dim_label = df_dim %>% pull("value_label")
       
-      value_dim = value_dim[!is.na(value_dim)]
-      value_dim_label = value_dim_label[!is.na(value_dim_label)]
+      value_dim = sort(value_dim[!is.na(value_dim)])
+      value_dim_label = sort(value_dim_label[!is.na(value_dim_label)])
       
       list_dim_ui[[length(list_dim_ui)+1]] <-
         column(2,
@@ -395,21 +398,6 @@ observeEvent({
                    ),
                  choicesOpt = list(content = value_dim_label)
                )
-          # selectizeInput(
-          #   inputId = dim,
-          #   label = NULL,
-          #   selected = input[[dim]],
-          #   choices = value_dim,
-          #   width = "100%",
-          #   multiple = TRUE,
-          #   options = list(
-          #     'plugins' = list('remove_button'),
-          #     'create' = TRUE,
-          #     'persist' = FALSE,
-          #     placeholder = sprintf("%s %s", dim_selectize_placeholder, dim),
-          #     onInitialize = I('function() { this.setValue(""); }')
-          #   )
-          # )
         )
     }
 
@@ -421,7 +409,9 @@ observeEvent({
   }
 
   idbank_list_react(idbank_list_selected)
+  idbank_list_view(idbank_list_selected)
 
+  
   idbank_list_shown = idbank_list_selected %>%
     DT::datatable(filter = "none", selection = c("multiple"),
                   options = list(pageLength = 100, scrollX = TRUE,
@@ -448,6 +438,11 @@ observeEvent({
 
 }, ignoreNULL = FALSE)
 
+observe({ 
+  Print(input$tabs_menu)
+  Print(input$sidebarmenu)
+  Print(input$sidebarItemExpanded)
+  })
 
 observeEvent({
   input$dim1
@@ -473,59 +468,25 @@ observeEvent({
   if(is.null(lang())){lang_selected = "en"}else{lang_selected = lang()}
 
   
-  if(!is.null(input$dataset_picker)){
-    dataset_selected_name = input$dataset_picker
-
-    idbank_list_selected =
-      insee::get_idbank_list(dataset_selected_name) %>% 
-      insee::clean_table()
-    
-    if(lang_selected == "en"){
-      
-      id_en_short = id_en %>%
-        filter(nomflow %in% dataset_selected_name) %>% 
-        select(idbank, title)
-      
-      idbank_list_selected = idbank_list_selected %>% left_join(id_en_short, by = "idbank")
-    }else{
-      
-      id_fr_short = id_fr %>%
-        filter(nomflow %in% dataset_selected_name) %>% 
-        select(idbank, title)
-      
-      idbank_list_selected = idbank_list_selected %>% left_join(id_fr_short, by = "idbank")
-    }
-    
-    first_col = c("nomflow", "idbank", 'title')
-    other_col = names(idbank_list_selected)[!names(idbank_list_selected) %in% first_col]
-    idbank_list_selected = idbank_list_selected[,c(first_col, other_col)]
-    
-  }else{
-    
-    if(lang_selected == "en"){
-      idbank_list_selected = id_en
-    }else{
-      idbank_list_selected = id_fr
-    }
-    idbank_list_selected = idbank_list_selected %>%
-      select(nomflow, idbank, title, starts_with("dim"), cleFlow)
-  }
-
-  list_dim_column = names(idbank_list_selected)[grep("^dim", names(idbank_list_selected))]
-
+  idbank_list_selected = idbank_list_react()
+  list_idbank_column = names(idbank_list_selected)
+  list_dim_column = list_idbank_column[!stringr::str_detect(list_idbank_column, "^idbank|^cleFlow|^nomflow|^dim[:digit:]|^title")]
+  list_dim_column_label = list_dim_column[stringr::str_detect(list_dim_column, "_label_fr$|_label_en$")]
+  list_dim_column_short = list_dim_column[!list_dim_column %in% list_dim_column_label]
+  
   any_dim_not_null = FALSE
 
-  for(idim in 1:length(list_dim_column)){
-    dim = list_dim_column[idim]
+  for(idim in 1:length(list_dim_column_short)){
+    dim = list_dim_column_short[idim]
 
     if(length(dim) > 0) {
       if (!is.na(dim)) {
         any_dim_not_null = TRUE
-        if (!is.null(input[[dim]])) {
+        if (!is.null(input[[paste0('dim', idim)]])) {
 
           idbank_list_selected =
             idbank_list_selected %>%
-            filter(!!sym(dim) %in% input[[dim]])
+            filter(!!sym(dim) %in% input[[paste0('dim', idim)]])
         }
       }
     }
@@ -546,7 +507,7 @@ observeEvent({
 
   if(any_dim_not_null){
 
-  idbank_list_react(idbank_list_selected)
+  idbank_list_view(idbank_list_selected)
 
   idbank_list_shown = idbank_list_selected %>%
     DT::datatable(filter = "none", selection = c("multiple"),
@@ -584,10 +545,6 @@ observeEvent({
   DT::selectRows(idbank_list_proxy, NULL)
 })
 
-# get_interactive_plot()
-# get_one_plot()
-# input$slider_period
-# input$growth_button
 
 observeEvent({
   input$new_plot
@@ -597,23 +554,12 @@ observeEvent({
 
   row_selected = input$idbank_list_rows_selected
   
-  # Print(input$idbank_list_rows_selected)
-  # Print(input$new_plot)
-  
-  # trigger_update = TRUE
-  # if(!is.null(idbank_row_selected())){
-  #   if(all(row_selected %in% idbank_row_selected())){
-  #     if(all(idbank_row_selected() %in% row_selected)){
-  #       trigger_update = FALSE
-  #     }
-  #   }
-  # }
   # trigger_update
   if(TRUE){
     if(!is.null(row_selected)){
       
       idbank_selected =
-        idbank_list_react() %>%
+        idbank_list_view() %>%
         slice(row_selected) %>%
         pull(idbank)
       
@@ -625,7 +571,6 @@ observeEvent({
         mutate(TITLE_FR = paste(TITLE_FR , "-", IDBANK))
       
       gg_name = paste0("plot_", gsub("-|:| |CET","", Sys.time()))
-      # gg_name = paste0("plot_", paste0(idbank_selected, collapse = "_"))
       gg_current_name(gg_name)
       
       output$growth_button <- renderUI({
@@ -715,44 +660,9 @@ observeEvent({
                     min = min(data_raw$DATE),  max = max(data_raw$DATE),
                     value = c(min_slider_period, max_slider_period))
       })
-      
-      # output$slider_period_new_plot <- renderUI({
-      #   actionBttn(
-      #     inputId = "new_plot",
-      #     label = "",
-      #     style = "gradient",
-      #     color = "succes",
-      #     icon = icon("sync")
-      #   )
-      # })
-      
+  
       data = data %>%
         filter(DATE >= min_slider_period & DATE <= max_slider_period)
-      
-      # idbank_list_shown =
-      #   idbank_list_react() %>%
-      #   DT::datatable( filter = "none",
-      #                  selection = list(mode = "multiple", selected = row_selected, target = 'row'),
-      #                  options = list(pageLength = 100, scrollX = TRUE,
-      #                                 autoWidth = TRUE,
-      #                                 columnDefs = list(list(width = '170px', targets = c(0)),
-      #                                                   list(width = '130px', targets = c(1)),
-      #                                                   list(width = '500px', targets = c(2)))), rownames = FALSE) %>%
-      #   DT::formatStyle(0, lineHeight = '15px', target= 'row', textAlign = 'center')
-      # 
-      
-      # output$idbank_list <- DT::renderDT(idbank_list_shown)
-      
-      # list_tab = list()
-      # 
-      # list_tab[[length(list_tab)+1]] =
-      #   tabPanel(title = get_label("idbank_list", lang = lang_selected),
-      #            box(
-      #              width = "100%",
-      #              DT::dataTableOutput("idbank_list", width = "100%", height = "75vh")
-      #            ))
-      
-      # data_plotly = data
       
       data$TITLE_EN = unlist(lapply(strwrap(data$TITLE_EN,
                                             width = 80, simplify=FALSE),
@@ -770,13 +680,9 @@ observeEvent({
         if(lang_selected == "en"){
           gg = gg +
             facet_wrap(~TITLE_EN, scales = "free", dir = "v")
-          # gg = gg +
-          #   facet_wrap(~TITLE_EN, scales = "free", dir = "v", labeller = label_wrap_gen(80))
         }else{
           gg = gg +
             facet_wrap(~TITLE_FR, scales = "free", dir = "v")
-          # gg = gg +
-          #   facet_wrap(~TITLE_FR, scales = "free", dir = "v", labeller = label_wrap_gen(80))
         }
         gg = gg +
           geom_line() +
@@ -810,15 +716,6 @@ observeEvent({
                          plotOutput(gg_name, width = "100%", height = "80vh")
                        ))
         
-    
-        
-        # list_tab[[length(list_tab)+1]] =
-        #   tabPanel(title = get_label("plot_catalogue", lang = lang_selected),
-        #            box(
-        #              width = "100%",
-        #              plotOutput(gg_name, width = "100%", height = "80vh")
-        #            ))
-        
       }else{
         
         output[["plotly_requested"]] <- plotly::renderPlotly({gg_plotly(data, lang = lang_selected)})
@@ -828,13 +725,6 @@ observeEvent({
                            width = "100%",
                            plotlyOutput("plotly_requested", width = "100%", height = "80vh")
                          ))
-        
-        # list_tab[[length(list_tab)+1]] =
-        #   tabPanel(title = get_label("plot_catalogue", lang = lang_selected),
-        #            box(
-        #              width = "100%",
-        #              plotlyOutput("plotly_requested", width = "100%", height = "80vh")
-        #            ))
         
       }
       
@@ -882,22 +772,8 @@ observeEvent({
                 target = get_label("plot_catalogue", lang = lang_selected),
                 select = FALSE)
       
-      # list_tab[[length(list_tab)+1]] =
-      #   tabPanel(title = get_label("data_table", lang = lang_selected),
-      #            box(
-      #              width = "100%",
-      #              DT::dataTableOutput("data_table", width = "100%", height = "75vh")
-      #            ))
-      
-      # output$list_tab2 <- renderUI({
-      #   do.call(tabsetPanel, c(list_tab, id = 'tabs2', selected = get_label("plot_catalogue", lang = lang_selected)))
-      # })
-      
-      
     }
   }
- 
-  # idbank_row_selected(row_selected)
 })
 
   observeEvent({
@@ -1021,7 +897,7 @@ observeEvent({
 
     output$downloadSlides <- downloadHandler(
       filename = function() {
-        paste("inseeDashboard_slides_", gsub("-|:| |CET","", Sys.time()), ".pdf", sep="")
+        paste("frenchEconomy_slides_", gsub("-|:| |CET","", Sys.time()), ".pdf", sep="")
       },
       content = function(file) {
         rmarkdown::render(input = slides_rmd_file,

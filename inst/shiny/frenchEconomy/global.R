@@ -169,6 +169,14 @@ plot_table[nrow(plot_table)+1,] = c("pib_growth_qoq",
                                      "PIB - taux de croissance trimestriel",
                                      "GDP growth rate quarter-on-quarter")
 
+plot_table[nrow(plot_table)+1,] = c("death_birth",
+                                    "D\u00E9c\U00E8s et naissances en France depuis 1948",
+                                    "Deaths and Births in France since 1948")
+
+plot_table[nrow(plot_table)+1,] = c("immat",
+                                    "Immatriculations de voitures particuli\U00E8res neuves",
+                                    "New passenger cars registrations")
+
 plot_table = plot_table[which(!is.na(plot_table[,"id"])),]
 
 link_app_plot = system.file("shiny/frenchEconomy/plot", package = "frenchEconomy")
@@ -187,4 +195,9 @@ slides_rmd_file = system.file("./inst/shiny/frenchEconomy/slides.Rmd", package =
 #   mutate(dataset = gsub("\\[|\\]", "", dataset))
 #
 
+convertMenuItem <- function(mi,tabName) {
+  mi$children[[1]]$attribs['data-toggle']="tab"
+  mi$children[[1]]$attribs['data-value'] = tabName
+  mi
+}
 
