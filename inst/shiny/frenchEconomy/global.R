@@ -138,6 +138,15 @@ label_table[nrow(label_table)+1,] = c("growth_button_bob",
                                       "Taux de croissance bimensuel",
                                       "Bimonthly growth rate")
 
+label_table[nrow(label_table)+1,] = c("warning_insee_data1",
+                                      "Seules les donn\u00E9es disponibles\n ",
+                                      "Only the data avaiable on insee.fr should be")
+
+label_table[nrow(label_table)+1,] = c("warning_insee_data2",
+                                      "sur insee.fr font foi!",
+                                      "deemed as official statistics!")
+
+
 get_label = function(id, df = label_table, lang = "en"){
 
   row_df = which(df[,"id"] == id)
@@ -193,7 +202,17 @@ plot_table[nrow(plot_table)+1,] = c("survey_household",
                                     "Enqu\U00EAtes de conjoncture au pr\u00E8s des m\u00E9nages",
                                     "Households' survey about economic outlook")
 
+plot_table[nrow(plot_table)+1,] = c("pop_map",
+                                    "R\u00E9partition de la population sur le territoire - densit\u00E9 par kilom\u00E8tre carr\u00E9",
+                                    "Distribution of the population within French territory")
 
+plot_table[nrow(plot_table)+1,] = c("elect_map",
+                                    "Taux de participation \U00E0 la derni\u00E8re \u00E9lection pr\u00E9sidentielle - premier tour",
+                                    "Rate of participation to the last presidential election - first round")
+
+plot_table[nrow(plot_table)+1,] = c("pib_growth_contrib_aoa",
+                                    "PIB - contribution des composantes \U00E0 l'\u00E9volution annuelle en %",
+                                    "GDP - growth contriutions year-over-year, percentage")
 
 plot_table = plot_table[which(!is.na(plot_table[,"id"])),]
 
