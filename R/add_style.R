@@ -2,8 +2,7 @@
 #' @importFrom rlang ".data"
 #' @noRd
 add_style = function(gg, lang = "en",
-                     last_update = TRUE,
-                     img.file = "./inst/assets/insee.png", insee_logo = FALSE){
+                     last_update = TRUE){
 
   data = gg[["data"]]
   # idbank_used = data %>% distinct(IDBANK) %>% pull(IDBANK) %>% paste0(collapse = " ")
@@ -69,28 +68,6 @@ add_style = function(gg, lang = "en",
     }
   }
   
-  if(insee_logo){
-
-    file_img = system.file(img.file, package = "frenchEconomy")
-
-    if(file.exists(file_img)){
-      m = png::readPNG(file_img)
-
-      w <- matrix(grDevices::rgb(m[,,1],m[,,2],m[,,3], alpha = 0.7), nrow = dim(m)[1])
-
-      img =  w %>% 
-        grid::rasterGrob(interpolate = TRUE,
-                         #height =  3*grid::grobHeight(rg),
-                         width = grid::unit(1,'cm'),
-                         x = grid::unit(1,"npc"),
-                         y = grid::unit(1,"npc"),
-                         hjust = 1, vjust = 1)
-
-      gg_new = gg_new + ggplot2::annotation_custom(grob = img)
-    }
-
-  }
-
   return(gg_new)
 }
 
