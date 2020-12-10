@@ -5,3 +5,4 @@ doc
 README.html
 inst/doc
 .httr-oauth
+^docs$

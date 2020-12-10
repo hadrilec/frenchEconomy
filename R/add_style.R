@@ -3,12 +3,12 @@
 #' @noRd
 add_style = function(gg, lang = "en",
                      last_update = TRUE,
-                     img.file = "./inst/assets/insee.png", insee_logo = TRUE){
+                     img.file = "./inst/assets/insee.png", insee_logo = FALSE){
 
   data = gg[["data"]]
   # idbank_used = data %>% distinct(IDBANK) %>% pull(IDBANK) %>% paste0(collapse = " ")
 
-  if("DATE" %in% data){
+  if("DATE" %in% names(data)){
     last_update_date = data %>% pull(DATE) %>% max()
   }
   
@@ -21,7 +21,7 @@ add_style = function(gg, lang = "en",
     # caption_text_series = "S\u00E9ries utilis\u00E9es"
   }
 
-  caption_text_added = sprintf("%s : %s",
+  caption_text_added = sprintf("%s : %s, source : INSEE",
                                caption_text_start, lubridate::now()
   )
 
@@ -51,7 +51,7 @@ add_style = function(gg, lang = "en",
       legend.position = "bottom"
     )
 
-  if("DATE" %in% data){
+  if("DATE" %in% names(data)){
     if(last_update == TRUE){
       if(lang == "en"){
         subtt = sprintf("Last update : %s", last_update_date)
@@ -64,7 +64,8 @@ add_style = function(gg, lang = "en",
       }else{
         subtt_final = subtt
       }
-      gg = gg + ggplot2::labs(subtitle = subtt_final)
+      
+      gg_new = gg_new + ggplot2::labs(subtitle = subtt_final)
     }
   }
   

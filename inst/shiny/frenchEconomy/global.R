@@ -177,6 +177,24 @@ plot_table[nrow(plot_table)+1,] = c("immat",
                                     "Immatriculations de voitures particuli\U00E8res neuves",
                                     "New passenger cars registrations")
 
+plot_table[nrow(plot_table)+1,] = c("ippmp",
+                                    "Indices des prix des mati\U00E8res premi\U00E8res import\u00E9es en France",
+                                    "Imported raw materials prices index in France")
+
+plot_table[nrow(plot_table)+1,] = c("gov_debt",
+                                    "Dette des administrations publiques, crit\u00E9res de Maastricht",
+                                    "Debt of the general government, Maastricht definition")
+
+plot_table[nrow(plot_table)+1,] = c("supermarket",
+                                    "Chiffres d'affaires des enseignes de grande distribution",
+                                    "Sales in supermarkets")
+
+plot_table[nrow(plot_table)+1,] = c("survey_household",
+                                    "Enqu\U00EAtes de conjoncture au pr\u00E8s des m\u00E9nages",
+                                    "Households' survey about economic outlook")
+
+
+
 plot_table = plot_table[which(!is.na(plot_table[,"id"])),]
 
 link_app_plot = system.file("shiny/frenchEconomy/plot", package = "frenchEconomy")
@@ -195,9 +213,9 @@ slides_rmd_file = system.file("./inst/shiny/frenchEconomy/slides.Rmd", package =
 #   mutate(dataset = gsub("\\[|\\]", "", dataset))
 #
 
-convertMenuItem <- function(mi,tabName) {
-  mi$children[[1]]$attribs['data-toggle']="tab"
-  mi$children[[1]]$attribs['data-value'] = tabName
-  mi
-}
+# convertMenuItem <- function(mi,tabName) {
+#   mi$children[[1]]$attribs['data-toggle']="tab"
+#   mi$children[[1]]$attribs['data-value'] = tabName
+#   mi
+# }
 
