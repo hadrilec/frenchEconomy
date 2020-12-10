@@ -21,8 +21,8 @@ immat = function(lang = "en"){
       ggtitle("Immatriculations de voitures particuli\U00E8res neuves")
   }
   
-  # add_style function is available on GitHub
   gg = gg %>% add_style(lang = lang)
+  gg = gg + guides(colour = guide_legend(ncol = 1))
   
   return(gg)
 }
