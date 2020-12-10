@@ -39,7 +39,16 @@ shinyUI(
                             '#lang_fr {cursor: pointer}'
                           )
 
-                        )
+                        ),
+      dropdownMenu(type = "notifications",
+                   headerText = '',
+                   badgeStatus = "warning",
+                   notificationItem(
+                     text = htmlOutput("warning_insee_data"),
+                     icon = icon("exclamation-triangle"),
+                     status = "warning"
+                   )
+      )
                         ),
     dashboardSidebar(width=285,
                      sidebarMenu(id = "tabs_menu",

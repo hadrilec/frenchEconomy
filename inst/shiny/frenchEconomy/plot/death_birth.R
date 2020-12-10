@@ -19,8 +19,6 @@ death_birth = function(lang = "en"){
     mutate(period_fr = gsub("today", "aujourd'hui", period))
   
   x_dates = seq.Date(from = as.Date("1940-01-01"), to = Sys.Date(), by = "5 years")
-  last_date = data %>% pull(DATE) %>% max()
-  
   
   if(lang == "en"){
     
@@ -29,8 +27,7 @@ death_birth = function(lang = "en"){
       facet_wrap(~period, scales = "free_x", ncol = 1) +
       geom_line() +
       geom_point(size = 0.9) +
-      ggtitle("Deaths and Births in France since 1948") +
-      labs(subtitle = sprintf("Last update : %s", last_date)) 
+      ggtitle("Deaths and Births in France since 1948") 
       
     
   }else{
@@ -40,8 +37,7 @@ death_birth = function(lang = "en"){
       facet_wrap(~period_fr, scales = "free_x", ncol = 1) +
       geom_line() +
       geom_point(size = 0.9) +
-      ggtitle("D\u00E9c\U00E8s et naissances en France depuis 1948") +
-      labs(subtitle = sprintf("Derni\U00E8re mise \U00E0 jour : %s", last_date)) 
+      ggtitle("D\u00E9c\U00E8s et naissances en France depuis 1948")
     
   }
   

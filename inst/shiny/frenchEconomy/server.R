@@ -70,7 +70,14 @@ shinyServer(function(input, output, session) {
 
     output$deselect_idbank_in_list_title <- renderText(get_label("deselect_idbank_in_list_title", lang = lang_selected))
 
-  })
+    output$warning_insee_data <- renderUI(
+     tags$div(get_label("warning_insee_data1", lang = lang_selected),
+                      tags$br(),
+              get_label("warning_insee_data2", lang = lang_selected),
+                      style = "display: inline-block; vertical-align: middle;")) 
+        
+    
+    })
 
   observe({
     if(is.null(lang())){lang_selected = "en"}else{lang_selected = lang()}
