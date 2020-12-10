@@ -33,5 +33,12 @@ Imports:
   png,
   grid
 Depends: R (>= 2.10)
+Suggests:
+  maptools,
+  rdgal,
+  geosphere,
+  broom,
+  viridis,
+  treemapify
 NeedsCompilation: no
 RoxygenNote: 7.1.1
