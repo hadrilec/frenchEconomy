@@ -16,8 +16,7 @@ icp_growth_yoy = function(lang = "en"){
   data =
     get_insee_idbank( "001763417", "001763491", "001763508", "001763529", "001763565", "001763620", "001763641", "001763683",
                        "001763698", "001763774", "001763781", "001763793", "001759970") %>%
-    split_title(lang = "fr") %>%
-    split_title(lang = "en") %>% 
+    split_title() %>%
     mutate(month = lubridate::month(DATE)) %>% 
     arrange(DATE) %>% 
     group_by(TITLE_FR6, month) %>%
@@ -79,7 +78,7 @@ icp_growth_yoy = function(lang = "en"){
   }
   
   # add_style function is available on GitHub
-  gg = gg %>% add_style(lang = lang, insee_logo = F)
+  gg = gg %>% add_style(lang = lang)
   gg = gg + ggplot2::theme(text = ggplot2::element_text(size = 12))
     
   return(gg)

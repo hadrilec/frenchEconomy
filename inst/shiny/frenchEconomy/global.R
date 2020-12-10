@@ -178,6 +178,10 @@ plot_table[nrow(plot_table)+1,] = c("pib_growth_qoq",
                                      "PIB - taux de croissance trimestriel",
                                      "GDP growth rate quarter-on-quarter")
 
+plot_table[nrow(plot_table)+1,] = c("icp_growth_yoy",
+                                    "Inflation au niveau coicop 2, glissement annuel",
+                                    "Inflation at coicop level 2, yearly growth rate")
+
 plot_table[nrow(plot_table)+1,] = c("death_birth",
                                     "D\u00E9c\U00E8s et naissances en France depuis 1948",
                                     "Deaths and Births in France since 1948")
