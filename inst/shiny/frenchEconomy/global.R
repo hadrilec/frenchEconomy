@@ -218,6 +218,23 @@ plot_table[nrow(plot_table)+1,] = c("pib_growth_contrib_aoa",
                                     "PIB - contribution des composantes \U00E0 l'\u00E9volution annuelle en %",
                                     "GDP - growth contriutions year-over-year, percentage")
 
+plot_table[nrow(plot_table)+1,] = c("pib_current_price",
+                                    "PIB courant - d\u00E9composition, milliards d'euros",
+                                    "GDP current prices, billions euros"
+                                    )
+
+plot_table[nrow(plot_table)+1,] = c("rdb_pvr_achat",
+                                    "Revenu disponible brut des m\u00E9nages - pouvoir d'achat",
+                                    "Gross disposable income of households - purchasing power")
+
+plot_table[nrow(plot_table)+1,] = c("housing_construction",
+                                    "Construction de logements - nombre de logements commen\u00E9s - cumul sur 12 mois",
+                                    "Housing construction - started dwellings - 12-month aggregate")
+
+plot_table[nrow(plot_table)+1,] = c("conso_produit_val",
+                                    "Consommation effective des m\u00E9nages - prix courant",
+                                    "Actual household consumption - current price")
+
 plot_table = plot_table[which(!is.na(plot_table[,"id"])),]
 
 link_app_plot = system.file("shiny/frenchEconomy/plot", package = "frenchEconomy")

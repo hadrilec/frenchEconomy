@@ -35,7 +35,7 @@ ippmp = function(lang = "en"){
       facet_wrap(~TITLE_FR2, scales = "free") +
       geom_line() +
       labs(subtitle = "Prix en euros") +
-      ggtitle("Indices des prix des matières premières importées en France")
+      ggtitle("Indices des prix des mati\u00E8res premi\u00E8res import\u00E9es en France")
     
     
   }

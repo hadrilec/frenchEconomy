@@ -47,7 +47,7 @@ pib_growth_contrib_aoa = function(lang = "en"){
               RColorBrewer::brewer.pal(7,'Set1')[-1], 
               RColorBrewer::brewer.pal(8,'Set2'))
   
-  dates_scale = seq.Date(from = start_date, to = as.Date(paste0(lubridate::year(lubridate::today()), "-01-01")), by = "5 years")
+  dates_scale = seq.Date(from = start_date_plot, to = as.Date(paste0(lubridate::year(lubridate::today()), "-01-01")), by = "5 years")
   
   
   if(lang == "en"){
