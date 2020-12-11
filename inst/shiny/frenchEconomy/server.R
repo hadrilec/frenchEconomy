@@ -103,8 +103,18 @@ shinyServer(function(input, output, session) {
     }
 
     plot_table_react(plot_table_shown)
-
-    output$catalogue <- DT::renderDT(plot_table_shown,  rownames = FALSE)
+    
+    plot_table_shown2 = 
+      plot_table_shown %>% 
+      DT::datatable(
+        filter = "none",
+        options = list(pageLength = 100),
+        rownames = FALSE
+      ) %>%
+      DT::formatStyle(0, lineHeight = '15px', target = 'row')
+    
+    
+    output$catalogue <- DT::renderDT(plot_table_shown2,  rownames = FALSE)
 
     list_tab = list()
 
@@ -445,11 +455,11 @@ observeEvent({
 
 }, ignoreNULL = FALSE)
 
-observe({ 
-  Print(input$tabs_menu)
-  Print(input$sidebarmenu)
-  Print(input$sidebarItemExpanded)
-  })
+# observe({ 
+#   Print(input$tabs_menu)
+#   Print(input$sidebarmenu)
+#   Print(input$sidebarItemExpanded)
+#   })
 
 observeEvent({
   input$dim1
@@ -812,7 +822,16 @@ observeEvent({
           dplyr::rename(Titre = title_fr, Identifiant = id)
       }
 
-      output$catalogue <- DT::renderDT(plot_table_shown)
+      plot_table_shown2 = 
+        plot_table_shown %>% 
+        DT::datatable(
+          filter = "none",
+          options = list(pageLength = 100),
+          rownames = FALSE
+        ) %>%
+        DT::formatStyle(0, lineHeight = '15px', target = 'row')
+      
+      output$catalogue <- DT::renderDT(plot_table_shown2)
 
       gg_statement = sprintf("%s(lang='%s')", gg_selected, lang_selected )
 
@@ -829,17 +848,17 @@ observeEvent({
       list_tab = list()
 
       list_tab[[length(list_tab)+1]] =
-        tabPanel(title = get_label("plot_catalogue", lang = lang_selected),
-                 box(
-                   width = "100%",
-                   plotOutput(paste0(gg_selected, "_plot"), width = "100%", height = "80vh")
-                 ))
-
-      list_tab[[length(list_tab)+1]] =
         tabPanel(title = "Catalogue",
                  box(
                    width = "100%",
                    DT::dataTableOutput("catalogue", width = "100%", height = "75vh")
+                 ))
+      
+      list_tab[[length(list_tab)+1]] =
+        tabPanel(title = get_label("plot_catalogue", lang = lang_selected),
+                 box(
+                   width = "100%",
+                   plotOutput(paste0(gg_selected, "_plot"), width = "100%", height = "80vh")
                  ))
       
       list_tab[[length(list_tab)+1]] =
@@ -855,7 +874,8 @@ observeEvent({
                  )
 
       output$list_tab <- renderUI({
-        do.call(tabsetPanel, c(list_tab, id = 'tabs'))
+        do.call(tabsetPanel, c(list_tab, id = 'tabs',
+                               selected = get_label("plot_catalogue", lang = lang_selected)))
       })
 
     }
