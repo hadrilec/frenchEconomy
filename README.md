@@ -15,7 +15,7 @@ This package is a contribution to reproducible research and public data transpar
 ``` r
 # Get the development version from GitHub
 # install.packages("devtools")
-# devtools::install_github("hadrilec/frenchEconomy"
+# devtools::install_github("hadrilec/frenchEconomy")
 
 library(frenchEconomy)
 
