@@ -24,7 +24,7 @@ frenchEconomy()
 
 ```
 
-## Deaths and Births
+## Dashboard
 
 ![](inst/assets/demo.png)
 
