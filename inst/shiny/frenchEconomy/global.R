@@ -168,72 +168,94 @@ plot_table = data.frame(
   id = NA,
   title_fr = NA,
   title_en = NA,
+  dataset = NA,
   stringsAsFactors = FALSE)
 
 plot_table[nrow(plot_table)+1,] = c("enquete_indus",
                                       "Enqu\U00EAtes dans l'industrie",
-                                      "Surveys in industry")
+                                      "Surveys in industry",
+                                    NA)
 
 plot_table[nrow(plot_table)+1,] = c("pib_growth_qoq",
                                      "PIB - taux de croissance trimestriel",
-                                     "GDP growth rate quarter-on-quarter")
+                                     "GDP growth rate quarter-on-quarter",
+                                    NA)
 
 plot_table[nrow(plot_table)+1,] = c("icp_growth_yoy",
                                     "Inflation au niveau coicop 2, glissement annuel",
-                                    "Inflation at coicop level 2, yearly growth rate")
+                                    "Inflation at coicop level 2, yearly growth rate",
+                                    "IPC-2015")
 
 plot_table[nrow(plot_table)+1,] = c("death_birth",
                                     "D\u00E9c\U00E8s et naissances en France depuis 1948",
-                                    "Deaths and Births in France since 1948")
+                                    "Deaths and Births in France since 1948",
+                                    "DECES-MORTALITE")
 
 plot_table[nrow(plot_table)+1,] = c("immat",
                                     "Immatriculations de voitures particuli\U00E8res neuves",
-                                    "New passenger cars registrations")
+                                    "New passenger cars registrations",
+                                    "TRANSPORTS")
 
 plot_table[nrow(plot_table)+1,] = c("ippmp",
                                     "Indices des prix des mati\U00E8res premi\U00E8res import\u00E9es en France",
-                                    "Imported raw materials prices index in France")
+                                    "Imported raw materials prices index in France",
+                                    '"IPPMP-NF"')
 
 plot_table[nrow(plot_table)+1,] = c("gov_debt",
                                     "Dette des administrations publiques, crit\u00E9res de Maastricht",
-                                    "Debt of the general government, Maastricht definition")
+                                    "Debt of the general government, Maastricht definition",
+                                    'DETTE-TRIM-APU-2014')
 
 plot_table[nrow(plot_table)+1,] = c("supermarket",
                                     "Chiffres d'affaires des enseignes de grande distribution",
-                                    "Sales in supermarkets")
+                                    "Sales in supermarkets",
+                                    "ICA-2015-EMAGSA")
 
 plot_table[nrow(plot_table)+1,] = c("survey_household",
                                     "Enqu\U00EAtes de conjoncture au pr\u00E8s des m\u00E9nages",
-                                    "Households' survey about economic outlook")
+                                    "Households' survey about economic outlook",
+                                    "ENQ-CONJ-MENAGES")
 
 plot_table[nrow(plot_table)+1,] = c("pop_map",
                                     "R\u00E9partition de la population sur le territoire - densit\u00E9 par kilom\u00E8tre carr\u00E9",
-                                    "Distribution of the population within French territory")
+                                    "Distribution of the population within French territory",
+                                    "TCRED-ESTIMATIONS-POPULATION")
 
 plot_table[nrow(plot_table)+1,] = c("elect_map",
                                     "Taux de participation \U00E0 la derni\u00E8re \u00E9lection pr\u00E9sidentielle - premier tour",
-                                    "Rate of participation to the last presidential election - first round")
+                                    "Rate of participation to the last presidential election - first round",
+                                    "TCRED-CONDITIONSDEVIE-TXP-CDE")
 
 plot_table[nrow(plot_table)+1,] = c("pib_growth_contrib_aoa",
                                     "PIB - contribution des composantes \U00E0 l'\u00E9volution annuelle en %",
-                                    "GDP - growth contriutions year-over-year, percentage")
+                                    "GDP - growth contriutions year-over-year, percentage",
+                                    NA)
 
 plot_table[nrow(plot_table)+1,] = c("pib_current_price",
                                     "PIB courant - d\u00E9composition, milliards d'euros",
-                                    "GDP current prices, billions euros"
+                                    "GDP current prices, billions euros",
+                                    "CNT-2014-PIB-EQB-RF"
                                     )
 
 plot_table[nrow(plot_table)+1,] = c("rdb_pvr_achat",
                                     "Revenu disponible brut des m\u00E9nages - pouvoir d'achat",
-                                    "Gross disposable income of households - purchasing power")
+                                    "Gross disposable income of households - purchasing power",
+                                    "CNA-2014-RDB")
 
 plot_table[nrow(plot_table)+1,] = c("housing_construction",
-                                    "Construction de logements - nombre de logements commen\u00E9s - cumul sur 12 mois",
-                                    "Housing construction - started dwellings - 12-month aggregate")
+                                    "Construction de logements - nombre de logements commenc\u00E9s - cumul sur 12 mois",
+                                    "Housing construction - started dwellings - 12-month aggregate",
+                                    "CONSTRUCTION-LOGEMENTS")
 
 plot_table[nrow(plot_table)+1,] = c("conso_produit_val",
                                     "Consommation effective des m\u00E9nages - prix courant",
-                                    "Actual household consumption - current price")
+                                    "Actual household consumption - current price",
+                                    "CNA-2014-CONSO-MEN")
+
+plot_table[nrow(plot_table)+1,] = c("air_traffic",
+                                    'Vols nationaux et internationaux',
+                                    'Internal and international flights',
+                                    'TRANSPORTS')
 
 plot_table = plot_table[which(!is.na(plot_table[,"id"])),]
 
