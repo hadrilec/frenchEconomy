@@ -3,7 +3,7 @@
 #' @importFrom dplyr "distinct"
 #' @importFrom dplyr "pull"
 #' @importFrom dplyr "filter"
-#' @noRd
+#' @export
 gg_plotly = function(data, lang = "en"){
 
   idbank_selected = data %>% distinct(.data$IDBANK) %>% pull(.data$IDBANK)

@@ -1,6 +1,6 @@
 #' @importFrom magrittr "%>%"
 #' @importFrom rlang ".data"
-#' @noRd
+#' @export
 add_style = function(gg, lang = "en",
                      last_update = TRUE){
 
